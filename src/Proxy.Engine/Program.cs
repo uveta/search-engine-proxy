@@ -7,18 +7,17 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddProblemDetails(ConfigureProblemDetails);
+builder.Services
+    .AddControllers()
+    // Adds MVC conventions to work better with the ProblemDetails middleware.
+    .AddProblemDetailsConventions();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddPlaywright();
-
-builder.Services
-    .AddProblemDetails(ConfigureProblemDetails)
-    .AddControllers()
-    // Adds MVC conventions to work better with the ProblemDetails middleware.
-    .AddProblemDetailsConventions();
 
 var app = builder.Build();
 
@@ -37,14 +36,33 @@ else
 
 app.UseAuthorization();
 
-app.MapGet("google", async (IBrowser browser) =>
+app.MapGet("google", async (string searchFor, IBrowser browser) =>
 {
     var page = await browser.NewPageAsync();
     await page.GotoAsync("https://www.google.com/?hl=en");
-    throw new NotImplementedException();
-    // page.ClickAsync("");
+    var acceptButton = page.Locator("button", new PageLocatorOptions { HasTextString = "Accept all" });
+    if (acceptButton is null)
+    {
+        throw new InvalidOperationException("Could not find accept button");
+    }
+    await acceptButton.ClickAsync();
+    var searchInput = page.Locator("input[title=\"Search\"]");
+    if (searchInput is null)
+    {
+        throw new InvalidOperationException("Could not find search input");
+    }
+    await searchInput.TypeAsync(searchFor);
+    var searchButton = page.Locator("input", new PageLocatorOptions { HasTextString = "Google Search" }).Last;
+    if (searchButton is null)
+    {
+        throw new InvalidOperationException("Could not find search button");
+    }
+    await searchButton.ClickAsync();
+    await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
     var buffer = await page.ScreenshotAsync();
     return Results.File(buffer, "image/png");
+    // var html = await page.ContentAsync();
+    // return Results.Ok(new { Content = html });
 });
 
 app.Run();
