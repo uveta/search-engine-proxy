@@ -4,6 +4,7 @@
     "Proxy.Engine": {
       "commandName": "Project",
       "dotnetRunMessages": true,
+      "hotReloadEnabled": true,
       "launchBrowser": true,
       "launchUrl": "swagger",
       "applicationUrl": "http://localhost:5000",

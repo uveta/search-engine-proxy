@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using Hellang.Middleware.ProblemDetails;
 using Hellang.Middleware.ProblemDetails.Mvc;
 using Microsoft.Playwright;
@@ -59,10 +60,24 @@ app.MapGet("google", async (string searchFor, IBrowser browser) =>
     }
     await searchButton.ClickAsync();
     await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
-    var buffer = await page.ScreenshotAsync();
-    return Results.File(buffer, "image/png");
-    // var html = await page.ContentAsync();
-    // return Results.Ok(new { Content = html });
+    // var buffer = await page.ScreenshotAsync();
+    // return Results.File(buffer, "image/png");
+    var content = await page.ContentAsync();
+    do
+    {
+        var startIndex = content.IndexOf("<script", StringComparison.OrdinalIgnoreCase);
+        if (startIndex <= 0)
+        {
+            break;
+        }
+        var endIndex = content.IndexOf("</script>", startIndex, StringComparison.OrdinalIgnoreCase);
+        if (endIndex <= 0)
+        {
+            break;
+        }
+        content = content.Remove(startIndex, endIndex - startIndex + "</script>".Length);
+    } while (true);
+    return Results.Content(content, MediaTypeNames.Text.Html, System.Text.Encoding.UTF8);
 });
 
 app.Run();
