@@ -16,7 +16,7 @@ jobs:
       with:
         dotnet-version: 6.x
     - name: Install dependencies
-      working-directory: ./src
+      working-directory: ./src/Proxy.Engine
       run: dotnet restore
     # - name: Test
     #   run: dotnet test --no-restore --verbosity normal
