@@ -17,7 +17,7 @@ COPY --from=build-env ./chrome .
 # Install chrome
 RUN apt-get update -y
 # RUN apt-get install -y libstdc++6 openssl libncurses5 locales curl
-RUN apt-get -f install -y ./google-chrome-stable_current_amd64.deb
+RUN apt-get -f install -y --no-install-recommends ./google-chrome-stable_current_amd64.deb
 RUN rm -rf google-chrome-stable_current_amd64.deb
 RUN apt-get clean -y
 
