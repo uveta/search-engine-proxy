@@ -23,6 +23,5 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         context: ./src/Proxy.Engine
-        file: ./Dockerfile
         push: true
         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/sep:latest
